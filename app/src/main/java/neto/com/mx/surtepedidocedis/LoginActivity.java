@@ -1,19 +1,13 @@
 package neto.com.mx.surtepedidocedis;
 
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Handler;
-import android.os.Vibrator;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Vibrator;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -22,27 +16,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
+import org.ksoap2.serialization.SoapObject;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserFactory;
-
-import java.io.StringReader;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
 
 import neto.com.mx.surtepedidocedis.beans.UsuarioVO;
-import neto.com.mx.surtepedidocedis.dialogos.BienvenidaDialog;
 import neto.com.mx.surtepedidocedis.dialogos.ViewDialog;
+import neto.com.mx.surtepedidocedis.providers.ProviderValidaUsuario;
 import neto.com.mx.surtepedidocedis.utiles.Constantes;
 import neto.com.mx.surtepedidocedis.utiles.TiposAlert;
+
+import static neto.com.mx.surtepedidocedis.utiles.Constantes.METHOD_NAME_VALIDAUSUARIO;
+import static neto.com.mx.surtepedidocedis.utiles.Constantes.NAMESPACE;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -109,7 +95,43 @@ public class LoginActivity extends AppCompatActivity {
                 mDialog.setInverseBackgroundForced(false);
                 mDialog.show();
 
-                String url = Constantes.URL_STRING + "validaUsuario";
+                SoapObject request = new SoapObject(NAMESPACE,METHOD_NAME_VALIDAUSUARIO);
+
+                request.addProperty("usuario", usuario);
+                request.addProperty("password", convierteMD5(pass));
+                request.addProperty("idApp", Constantes.ID_APP_PICKEO);
+
+                ProviderValidaUsuario.getInstance(this).getValidaUsuario(request, new ProviderValidaUsuario.interfaceValidaUsuario() {
+                    @Override
+                    public void resolver(UsuarioVO respuestaValidaUsuario) {
+
+                        mDialog.dismiss();
+                        System.out.println("*** 1 *** " + respuestaValidaUsuario);
+
+
+
+                        if (respuestaValidaUsuario != null) {
+                            if (respuestaValidaUsuario.isEmpleadoValido().equals("true")) {
+                                Intent intent = new Intent(getApplicationContext(), CargaFolioPedidoActivity.class);
+                                intent.putExtra("numeroEmpleado", usuario);
+                                intent.putExtra("nombreEmpleado", respuestaValidaUsuario.getNombreEmpleado());
+                                startActivity(intent);
+                            } else {
+                                ViewDialog alert = new ViewDialog(LoginActivity.this);
+                                alert.showDialog(LoginActivity.this, respuestaValidaUsuario.getMensaje(), null, TiposAlert.ERROR);
+                            }
+                        } else {
+                            mDialog.dismiss();
+                            System.out.println("*** 2 ***");
+                            //cuando el tiempo del servicio exedio el timeout
+                            ViewDialog alert = new ViewDialog(LoginActivity.this);
+                            alert.showDialog(LoginActivity.this, "Error al consumir el servicio que valida al usuario", null, TiposAlert.ERROR);
+                        }
+
+                    }
+                });
+
+                /*String url = Constantes.URL_STRING + "validaUsuario";
 
 
                 StringRequest strRequest = new StringRequest(Request.Method.POST, url,
@@ -168,7 +190,7 @@ public class LoginActivity extends AppCompatActivity {
                         DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                         DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-                AppController.getInstance().addToRequestQueue(strRequest, "tag");
+                AppController.getInstance().addToRequestQueue(strRequest, "tag");*/
 
             } catch(Exception me) {
                 ViewDialog alert = new ViewDialog(LoginActivity.this);
@@ -181,7 +203,7 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    public void generaRespuesta(String response, UsuarioVO usuarioVO) {
+    /*public void generaRespuesta(String response, UsuarioVO usuarioVO) {
         try {
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -216,7 +238,7 @@ public class LoginActivity extends AppCompatActivity {
             ViewDialog alert = new ViewDialog(LoginActivity.this);
             alert.showDialog(LoginActivity.this, "Error al leer el estatus del usuario del xml: " + e.getMessage(), null, TiposAlert.ERROR);
         }
-    }
+    }*/
 
     public String convierteMD5(String pass) {
         try {

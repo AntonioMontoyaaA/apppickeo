@@ -4,8 +4,6 @@ package neto.com.mx.surtepedidocedis;
  * Created by yruizm on 28/09/17.
  */
 
-import neto.com.mx.surtepedidocedis.utiles.LruBitmapCache;
-
 import android.app.Application;
 import android.text.TextUtils;
 
@@ -13,6 +11,8 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
+
+import neto.com.mx.surtepedidocedis.utiles.LruBitmapCache;
 
 public class AppController extends Application {
 

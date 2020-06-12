@@ -8,49 +8,49 @@ import java.io.Serializable;
 
 public class ZonaPickeoVO implements Serializable {
 
-    private int idZona;
-    private String descripcionZona;
-    private int zonaValida;
-    private String nombreUsuario;
-    private String nombreCorto;
+    private int zonaId;
+    private String zona;
+    private int usuarioId;
+    private String usuario;
+    private String estatus;
 
-    public int getIdZona() {
-        return idZona;
+    public int getZonaId() {
+        return zonaId;
     }
 
-    public void setIdZona(int idZona) {
-        this.idZona = idZona;
+    public void setZonaId(int zonaId) {
+        this.zonaId = zonaId;
     }
 
-    public String getDescripcionZona() {
-        return descripcionZona;
+    public String getZona() {
+        return zona;
     }
 
-    public void setDescripcionZona(String descripcionZona) {
-        this.descripcionZona = descripcionZona;
+    public void setZona(String zona) {
+        this.zona = zona;
     }
 
-    public int getZonaValida() {
-        return zonaValida;
+    public int getUsuarioId() {
+        return usuarioId;
     }
 
-    public void setZonaValida(int zonaValida) {
-        this.zonaValida = zonaValida;
+    public void setUsuarioId(int usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
-    public String getNombreUsuario() {
-        return nombreUsuario;
+    public String getUsuario() {
+        return usuario;
     }
 
-    public void setNombreUsuario(String nombreUsuario) {
-        this.nombreUsuario = nombreUsuario;
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
     }
 
-    public String getNombreCorto() {
-        return nombreCorto;
+    public String getEstatus() {
+        return estatus;
     }
 
-    public void setNombreCorto(String nombreCorto) {
-        this.nombreCorto = nombreCorto;
+    public void setEstatus(String estatus) {
+        this.estatus = estatus;
     }
 }

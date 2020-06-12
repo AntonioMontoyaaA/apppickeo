@@ -16,6 +16,7 @@ public class CodigosGuardadosVO implements Serializable {
     private int codigo;
     private String mensaje;
 
+
     public int getTotalCajasAsignadas() {
         return totalCajasAsignadas;
     }
@@ -71,4 +72,6 @@ public class CodigosGuardadosVO implements Serializable {
     public void setTotalArticulosEnPedido(int totalArticulosEnPedido) {
         this.totalArticulosEnPedido = totalArticulosEnPedido;
     }
+
+
 }

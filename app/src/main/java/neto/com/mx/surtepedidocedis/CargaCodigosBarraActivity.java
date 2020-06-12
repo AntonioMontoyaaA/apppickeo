@@ -1,20 +1,17 @@
 package neto.com.mx.surtepedidocedis;
 
-import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Handler;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -26,32 +23,26 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.android.volley.AuthFailureError;
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
 
+import org.ksoap2.serialization.SoapObject;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import neto.com.mx.surtepedidocedis.beans.ArticuloVO;
-import neto.com.mx.surtepedidocedis.beans.CodigoBarraVO;
 import neto.com.mx.surtepedidocedis.beans.CodigosGuardadosVO;
 import neto.com.mx.surtepedidocedis.dialogos.ViewDialog;
-import neto.com.mx.surtepedidocedis.dialogos.ViewDialogoConfirma;
 import neto.com.mx.surtepedidocedis.dialogos.ViewDialogoErrorActivity;
-import neto.com.mx.surtepedidocedis.utiles.Constantes;
+import neto.com.mx.surtepedidocedis.providers.ProviderGeneraCatalogo;
+import neto.com.mx.surtepedidocedis.providers.ProviderGuardarArticulos;
 import neto.com.mx.surtepedidocedis.utiles.TiposAlert;
+
+import static neto.com.mx.surtepedidocedis.utiles.Constantes.METHOD_NAME_GUARDARARTSCONTADOSVERIFICADOR;
+import static neto.com.mx.surtepedidocedis.utiles.Constantes.METHOD_NAME_OBTIENECATALOGOSARTICULOS;
+import static neto.com.mx.surtepedidocedis.utiles.Constantes.NAMESPACE;
 
 public class CargaCodigosBarraActivity extends AppCompatActivity {
 
@@ -77,11 +68,11 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
     String descripcionNormaEmpaqueDialogo = "";
     String descripcionNormaEmpaqueWSDialogo = "";
     private long articuloIdBusqueda = 0;
-    private int totalCajasAsignadas = 0;
+    public static int totalCajasAsignadas = 0;
     private int totalCajasPickeadas = 0;
     private boolean esGuardadoPorCodigos = false;
 
-    private HashMap<Long, ArticuloVO> mapaCatalogo = new HashMap<Long, ArticuloVO>();
+    public static HashMap<Long, ArticuloVO> mapaCatalogo = new HashMap<Long, ArticuloVO>();
     private HashMap<String, Integer> mapaCodigosNoRem = new HashMap<String, Integer>();
 
     private AlphaAnimation buttonClick = new AlphaAnimation(1F, 0.5F);
@@ -93,7 +84,9 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
         setContentView(R.layout.activity_carga_codigos_barra);
         getSupportActionBar().hide();
 
-        folio = new String(this.getIntent().getStringExtra("folio").trim());
+        String arreglo = this.getIntent().getStringExtra("folio").trim();
+        folio = new String(arreglo);
+        System.out.println("//////////////////////////////////////////////////////////////////////FOLIO:" + folio+ "/////////////");
         nombreEmpleado = new String(this.getIntent().getStringExtra("nombreEmpleado").trim());
         numeroEmpleado = new String(this.getIntent().getStringExtra("numeroEmpleado").trim());
         nombreTienda = new String(this.getIntent().getStringExtra("nombreTienda").trim());
@@ -109,7 +102,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
 
 
         editTextCodigos = (EditText) findViewById(R.id.codigoBarraText);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             editTextCodigos.setCursorVisible(false);
         }else{
             editTextCodigos.setInputType(InputType.TYPE_NULL);
@@ -159,10 +152,11 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
 
     public void dibujaArticuloPorIndice() {
         ACCION_GUARDA = 0;
-        ejecutaWSHilo();
         //Busca código de barras en el catálogo
         int i = 0;
         for (Map.Entry<Long, ArticuloVO> entry : mapaCatalogo.entrySet()) {
+            System.out.println("////////////////////////////////valor de I"+i);
+            i++;
             if(entry.getValue().getPosicion() == indicePivote) {
                 articuloIdBusqueda = entry.getKey();
                 descripcionCodigoBarras = entry.getValue().getNombreArticulo();
@@ -171,9 +165,17 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                 descripcionNormaEmpaqueWSDialogo = " con " + entry.getValue().getNormaEmpaque() + " piezas";
                 existeCodigo = true;
                 entry.getValue().setEsCapturado(true);
+
+                System.out.println("entry.getKey()///////" +entry.getKey());
+                System.out.println("entry.getValue().getNombreArticulo()/////"+entry.getValue().getNombreArticulo());
+                System.out.println("entry.getValue().getTotalCajasPickeadas()/////" + entry.getValue().getTotalCajasPickeadas());
+                System.out.println("entry.getValue().getTotalCajasAsignadas()////" + entry.getValue().getTotalCajasAsignadas());
+                System.out.println("entry.getValue().getNormaEmpaque()/////////" + entry.getValue().getNormaEmpaque());
+
                 break;
             }
         }
+        ejecutaWSHilo();
         estableceNombreArticulo();
     }
 
@@ -341,14 +343,77 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                 mDialog.setInverseBackgroundForced(false);
                 mDialog.show();
 
-                String url = Constantes.URL_STRING + "obtieneCatalogoArticulos";
+
+                SoapObject request =new SoapObject(NAMESPACE,METHOD_NAME_OBTIENECATALOGOSARTICULOS);
+
+                String serie=Build.SERIAL;
+
+                request.addProperty("folio", folio);
+                request.addProperty("numeroSerie", serie);
+                request.addProperty("zonaId", String.valueOf(idZona));
+                request.addProperty("usuario", numeroEmpleado);
+
+
+                System.out.println("/////////////////Antes de entrar al Provider MapaCatalogo: " + mapaCatalogo + "////////////Request:///" + request);
+
+                ProviderGeneraCatalogo.getInstance(this).getGeneraCatalogo(request, new ProviderGeneraCatalogo.interfaceGeneraCatalogo() {
+                    @Override
+                    public void resolver(ArticuloVO respuestaGeneraCatalogo) {
+                        System.out.println("*** 1 *** NO ENTRA AL ERROR :o " + respuestaGeneraCatalogo);
+
+                        System.out.println("///////////////////////////mapaCatalogo:"+mapaCatalogo);
+
+                        if (respuestaGeneraCatalogo != null) {
+
+                            if (mapaCatalogo.size() > 0) {
+                                System.out.println("////////////////////////Despues de pasar por el Provider MapaCataloo: " + mapaCatalogo.size() + "////////////////");
+                                indicePivote = 0;
+                                totalArticulosPedidoZona = mapaCatalogo.size();
+                                dibujaArticuloPorIndice();
+                            }
+                        }  else {
+                            mDialog.dismiss();
+                            System.out.println("*** 2 ***");
+                            //cuando el tiempo del servicio exedio el timeout
+                            ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                            alert.showDialog(CargaCodigosBarraActivity.this, "Error al cargar el catálogo de artículos", null, TiposAlert.ERROR);
+                        }
+
+                    }
+
+
+
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        return getHeaders();
+                    }
+
+                });
+                mDialog.dismiss();
+                System.out.println("//////////STRREQUEST:///////// " + request + "/////////////////////");
+
+            } catch(Exception me) {
+                ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                alert.showDialog(CargaCodigosBarraActivity.this, "URL no disponible: " + me.getMessage(), null, TiposAlert.ERROR);
+            }
+        } else {
+            // Mostrar errores
+            ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+            alert.showDialog(CargaCodigosBarraActivity.this, "No hay conexión HTTP", null, TiposAlert.ERROR);
+        }
+
+
+
+
+
+                /*String url = Constantes.URL_STRING + "obtieneCatalogoArticulos";
 
                 StringRequest strRequest = new StringRequest(Request.Method.POST, url,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
                                 mDialog.dismiss();
-                                System.out.println("*** 1 *** " + response);
+                                System.out.println("*** 1 *** NO ENTRA AL ERROR :o " + response);
                                 generaCatalogoV2(response);
 
                                 if(mapaCatalogo.size() > 0) {
@@ -390,24 +455,8 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                     public Map<String, String> getHeaders() throws AuthFailureError {
                         return super.getHeaders();
                     }
-                };
+                };*/
 
-                strRequest.setRetryPolicy(new DefaultRetryPolicy(
-                        50000,
-                        DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                        DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-                AppController.getInstance().addToRequestQueue(strRequest, "tag");
-
-            } catch(Exception me) {
-                ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
-                alert.showDialog(CargaCodigosBarraActivity.this, "URL no disponible: " + me.getMessage(), null, TiposAlert.ERROR);
-            }
-        } else {
-            // Mostrar errores
-            ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
-            alert.showDialog(CargaCodigosBarraActivity.this, "No hay conexión HTTP", null, TiposAlert.ERROR);
-        }
     }
 
     public void ejecutaWS() {
@@ -418,17 +467,78 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
         if (networkInfo != null && networkInfo.isConnected()) {
             // Operaciones http
 
+            final ProgressDialog mDialog = new ProgressDialog(this);
+            mDialog.setMessage("Guardando códigos de barra...");
+            mDialog.setCancelable(false);
+            mDialog.setInverseBackgroundForced(false);
+            mDialog.show();
+
             try {
-                String url = Constantes.URL_STRING + "guardarArticulosContados";
 
-                final ProgressDialog mDialog = new ProgressDialog(this);
-                mDialog.setMessage("Guardando códigos de barra...");
-                mDialog.setCancelable(false);
-                mDialog.setInverseBackgroundForced(false);
+                SoapObject request = new SoapObject(NAMESPACE,METHOD_NAME_GUARDARARTSCONTADOSVERIFICADOR);
+                request.addProperty("folio", folio);
+                request.addProperty("articulosArray", obtieneCadenaArticulos());
+                request.addProperty("cantidadesArray", obtieneCadenaCajas());
+                request.addProperty("tipoGuardado", String.valueOf(ACCION_GUARDA));
+                request.addProperty("zonaId", String.valueOf(idZona));
+                request.addProperty("usuario", numeroEmpleado);
+                request.addProperty("numeroSerie", Build.SERIAL);
+                request.addProperty("version", version);
+
+                ProviderGuardarArticulos.getInstance(this).getGuardarArticulos(request, new ProviderGuardarArticulos.interfaceGuardarArticulos() {
+                    @Override
+                    public void resolver(CodigosGuardadosVO respuestaGuardaArticulos) {
+
+                        System.out.println("*** 1 *** response: " + respuestaGuardaArticulos);
+
+
+                        if (respuestaGuardaArticulos != null) {
+                            if (respuestaGuardaArticulos.getCodigo() == 0) {
+                                if (ACCION_GUARDA == 1) {
+                                    Intent intent = new Intent(CargaCodigosBarraActivity.this, DiferenciasRecibidasActivity.class);
+                                    intent.putExtra("CodigosGuardados", respuestaGuardaArticulos);
+                                    intent.putExtra("folio", folio);
+                                    intent.putExtra("numeroEmpleado", numeroEmpleado);
+                                    intent.putExtra("nombreEmpleado", nombreEmpleado);
+                                    intent.putExtra("nombreTienda", nombreTienda);
+                                    intent.putExtra("nombreZona", nombreZona);
+                                    intent.putExtra("idZona", idZona);
+                                    startActivity(intent);
+                                } else if (ACCION_GUARDA == 0) {
+                                    ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                                    alert.showDialog(CargaCodigosBarraActivity.this, "Se han guardado correctamente los cambios. Recuerda que debes completar tu pedido", null, TiposAlert.CORRECTO);
+                                }
+                            } else {
+                                ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                                alert.showDialog(CargaCodigosBarraActivity.this, "Error en el servicio que guarda los códigos: " + respuestaGuardaArticulos.getMensaje(), null, TiposAlert.ERROR);
+                            }
+                        } else {
+                            mDialog.dismiss();
+                            System.out.println("*** 2 ***");
+                            //cuando el tiempo del servicio exedio el timeout
+                            ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                            alert.showDialog(CargaCodigosBarraActivity.this, "Error en el servicio que guarda los códigos: favor de validar la comunicación del dispositivo", null, TiposAlert.ERROR);
+                        }
+                        mDialog.dismiss();
+                    }
+                });
+            } catch(Exception me) {
                 if(!esGuardadoPorCodigos) {
-                    mDialog.show();
+                    mDialog.dismiss();
+                    ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                    alert.showDialog(CargaCodigosBarraActivity.this, "URL no disponible: favor de validar la conexión a Internet" + me.getMessage(), null, TiposAlert.ERROR);
                 }
+            }
+        } else {
+            // Mostrar errores
+            if(!esGuardadoPorCodigos) {
+                ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                alert.showDialog(CargaCodigosBarraActivity.this, "No hay conexión HTTP", null, TiposAlert.ERROR);
+            }
+        }
 
+
+                /*String url = Constantes.URL_STRING + "guardarArticulosContados";
                 StringRequest strRequest = new StringRequest(Request.Method.POST, url,
                         new Response.Listener<String>() {
                             @Override
@@ -499,7 +609,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                 ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
                 alert.showDialog(CargaCodigosBarraActivity.this, "No hay conexión HTTP", null, TiposAlert.ERROR);
             }
-        }
+        }*/
     }
 
     public void ingresaCodigoBarras() {
@@ -623,16 +733,24 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
 
     public String obtieneCadenaArticulos() {
         StringBuffer cadena = new StringBuffer();
+        System.out.println("//////////////////NEW CADENA "+cadena);
         for (Map.Entry<Long, ArticuloVO> entry : mapaCatalogo.entrySet()) {
+            System.out.println("//////////////////Entra a for "+cadena+"////////////");
+            System.out.println("AccionGuarda"+ACCION_GUARDA+"//////////");
             if(ACCION_GUARDA == 0 && entry.getValue().isEsCapturado()) {
+                System.out.println("//////////////////Entra a if "+"///////");
                 cadena.append(entry.getKey());
+                System.out.println("//////////////////CADENA IF "+cadena);
                 cadena.append("|");
             } else if(ACCION_GUARDA == 1) {
                 cadena.append(entry.getKey());
+                System.out.println("//////////////////CADENA ELSE"+cadena);
                 cadena.append("|");
             }
         }
         cadena.replace(cadena.lastIndexOf("|"), cadena.lastIndexOf("|") + 1, "" );
+
+        System.out.println("//////////////////CADENA FINAL"+cadena);
 
         return cadena.toString();
     }
@@ -713,7 +831,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
         }
     }
 
-    public void generaFaltantes(String response, CodigosGuardadosVO codigos) {
+    /*public void generaFaltantes(String response, CodigosGuardadosVO codigos) {
         try {
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -781,7 +899,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
             ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
             alert.showDialog(CargaCodigosBarraActivity.this, "Error al formar las diferencias del xml: " + e.getMessage(), null, TiposAlert.ERROR);
         }
-    }
+    }*/
 
     public void cuentaCajasPickeadas() {
         totalCajasPickeadas = 0;
@@ -797,8 +915,47 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
             // Operaciones http
+            System.out.println("Antes del try Catch");
             try {
-                String url = Constantes.URL_STRING + "guardarArticulosContados";
+
+                SoapObject request = new SoapObject(NAMESPACE,METHOD_NAME_GUARDARARTSCONTADOSVERIFICADOR);
+                //System.out.println("Se crea SoapObject");
+                request.addProperty("folio", folio);
+                //System.out.println("se agrega folio");
+                request.addProperty("articulosArray", obtieneCadenaArticulos());
+                //System.out.println("se agrega articulosArray");
+                request.addProperty("cantidadesArray", obtieneCadenaCajas());
+                //System.out.println("se agrega cantidadesArray");
+                request.addProperty("tipoGuardado", String.valueOf(ACCION_GUARDA));
+                //System.out.println("se agrega tipoGuardado");
+                request.addProperty("zonaId", String.valueOf(idZona));
+                //System.out.println("se agrega zonaId");
+                request.addProperty("usuario", numeroEmpleado);
+                //System.out.println("se agrega usuario");
+                request.addProperty("numeroSerie", Build.SERIAL);
+                //System.out.println("se agrega numeroSerie");
+                request.addProperty("version", version);
+                //System.out.println("se agrega version");
+                //System.out.println("/////////////////////////////////////REQUEST: "+ request + "////////////////////////////////////////");
+
+                ProviderGuardarArticulos.getInstance(this).getGuardarArticulos(request, new ProviderGuardarArticulos.interfaceGuardarArticulos() {
+                    @Override
+                    public void resolver(CodigosGuardadosVO respuestaGuardaArticulos) {
+
+                        System.out.println("*** 1 *** response: " + respuestaGuardaArticulos);
+
+                        if (respuestaGuardaArticulos != null) {
+                            System.out.println("*** Códigos guardados con éxito *** response: " + respuestaGuardaArticulos);
+                            System.out.println("*** Pedido = " + folio);
+                        }else {
+                            System.out.println("*** 2 ***");
+                            //cuando el tiempo del servicio exedio el timeout
+                            ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                            alert.showDialog(CargaCodigosBarraActivity.this, "Error en el servicio que guarda los códigos: favor de validar la comunicación del dispositivo", null, TiposAlert.ERROR);
+                        }
+                    }
+                });
+                /*String url = Constantes.URL_STRING + "guardarArticulosContados";
                 int contadorOcurrencias = 0;
 
                 StringRequest strRequest = new StringRequest(Request.Method.POST, url,
@@ -831,7 +988,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                         return params;
                     }
                 };
-                AppController.getInstance().addToRequestQueue(strRequest, "tag");
+                AppController.getInstance().addToRequestQueue(strRequest, "tag");*/
 
             } catch(Exception me) {
                 System.out.println("*** No existe comunicación ***");

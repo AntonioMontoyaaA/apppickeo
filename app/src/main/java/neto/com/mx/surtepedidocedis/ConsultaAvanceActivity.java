@@ -7,39 +7,28 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
+import org.ksoap2.serialization.SoapObject;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserFactory;
-
-import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import neto.com.mx.surtepedidocedis.beans.ArticuloVO;
-import neto.com.mx.surtepedidocedis.beans.CodigoBarraVO;
 import neto.com.mx.surtepedidocedis.beans.CodigosGuardadosVO;
 import neto.com.mx.surtepedidocedis.dialogos.ViewDialog;
-import neto.com.mx.surtepedidocedis.utiles.Constantes;
+import neto.com.mx.surtepedidocedis.providers.ProviderGuardarArticulos;
 import neto.com.mx.surtepedidocedis.utiles.TiposAlert;
+
+import static neto.com.mx.surtepedidocedis.utiles.Constantes.METHOD_NAME_GUARDARARTSCONTADOSVERIFICADOR;
+import static neto.com.mx.surtepedidocedis.utiles.Constantes.NAMESPACE;
 
 public class ConsultaAvanceActivity extends AppCompatActivity {
 
@@ -97,7 +86,7 @@ public class ConsultaAvanceActivity extends AppCompatActivity {
         if (networkInfo != null && networkInfo.isConnected()) {
             // Operaciones http
             try {
-                String url = Constantes.URL_STRING + "guardarArticulosContados";
+                //String url = Constantes.URL_STRING + "guardarArticulosContados";
 
                 final ProgressDialog mDialog = new ProgressDialog(this);
                 mDialog.setMessage("Consultando avance...");
@@ -105,7 +94,95 @@ public class ConsultaAvanceActivity extends AppCompatActivity {
                 mDialog.setInverseBackgroundForced(false);
                 mDialog.show();
 
-                StringRequest strRequest = new StringRequest(Request.Method.POST, url,
+                SoapObject request = new SoapObject(NAMESPACE,METHOD_NAME_GUARDARARTSCONTADOSVERIFICADOR);
+
+                request.addProperty("folio", folio);
+                request.addProperty("articulosArray", obtieneCadenaArticulos());
+                request.addProperty("cantidadesArray", obtieneCadenaCajas());
+                request.addProperty("tipoGuardado", String.valueOf(ACCION_GUARDA));
+                request.addProperty("zonaId", String.valueOf(idZona));
+                request.addProperty("usuario", numeroEmpleado);
+                request.addProperty("numeroSerie", Build.SERIAL);
+                request.addProperty("version", version);
+
+                System.out.println("///////////////////////////REQUEST"+request);
+
+                ProviderGuardarArticulos.getInstance(this).getGuardarArticulos(request, new ProviderGuardarArticulos.interfaceGuardarArticulos() {
+                    @Override
+                    public void resolver(CodigosGuardadosVO respuestaGuardaArticulos) {
+                        mDialog.dismiss();
+                        System.out.println("*** 1 *** response: " + respuestaGuardaArticulos);
+
+
+                        if (respuestaGuardaArticulos != null) {
+                            if (respuestaGuardaArticulos.getCodigo() == 0) {
+
+                                TextView artAsignadosText = (TextView) findViewById(R.id.artAsignados);
+                                artAsignadosText.setText(String.valueOf(respuestaGuardaArticulos.getTotalArticulosEnPedido()));
+                                System.out.println("/////////////////////////////////////ENpEDIDO"+respuestaGuardaArticulos.getTotalArticulosEnPedido());
+
+                                TextView artContadosText = (TextView) findViewById(R.id.artContados);
+                                artContadosText.setText(String.valueOf(respuestaGuardaArticulos.getTotalArticulosCapturados()));
+                                System.out.println("////////////////////////////////CAPTURADOS"+respuestaGuardaArticulos.getTotalArticulosCapturados());
+
+                                TextView cajasSurtidosText = (TextView) findViewById(R.id.cajasAsignadas);
+                                cajasSurtidosText.setText(String.valueOf(respuestaGuardaArticulos.getTotalCajasAsignadas()));
+                                System.out.println("////////////////////////////////Asignadas"+respuestaGuardaArticulos.getTotalCajasAsignadas());
+
+                                TextView cajasContadosText = (TextView) findViewById(R.id.cajasContados);
+                                cajasContadosText.setText(String.valueOf(respuestaGuardaArticulos.getTotalCajasPickeadas()));
+                                System.out.println("////////////////////////////////Pickeadas"+respuestaGuardaArticulos.getTotalCajasPickeadas());
+
+                                TextView porcentajeArticulosText = (TextView) findViewById(R.id.porcentajeArticulos);
+                                if (respuestaGuardaArticulos.getTotalArticulosEnPedido() != 0) {
+                                    int porcentajeArticulos = (int) ((respuestaGuardaArticulos.getTotalArticulosCapturados() * 100) / respuestaGuardaArticulos.getTotalArticulosEnPedido());
+                                    porcentajeArticulosText.setText(String.valueOf(porcentajeArticulos + "%"));
+
+                                    ProgressBar progressBarArticulos = (ProgressBar) findViewById(R.id.progressBarArticulos);
+                                    ObjectAnimator animation = ObjectAnimator.ofInt(progressBarArticulos, "progress", 0, porcentajeArticulos); // see this max value coming back here, we animale towards that value
+                                    animation.setDuration(2000); //in milliseconds
+                                    animation.setInterpolator(new DecelerateInterpolator());
+                                    animation.start();
+                                } else {
+                                    porcentajeArticulosText.setText("0%");
+                                }
+
+                                TextView porcentajeCajasText = (TextView) findViewById(R.id.porcentajeCajas);
+                                if (respuestaGuardaArticulos.getTotalCajasAsignadas() != 0) {
+                                    int porcentajeCajas = (int) ((respuestaGuardaArticulos.getTotalCajasPickeadas() * 100) / respuestaGuardaArticulos.getTotalCajasAsignadas());
+                                    porcentajeCajasText.setText(String.valueOf(porcentajeCajas + "%"));
+
+                                    ProgressBar progressBarCajas = (ProgressBar) findViewById(R.id.progressBarCajas);
+                                    ObjectAnimator animationCajas = ObjectAnimator.ofInt(progressBarCajas, "progress", 0, porcentajeCajas); // see this max value coming back here, we animale towards that value
+                                    animationCajas.setDuration(2000); //in milliseconds
+                                    animationCajas.setInterpolator(new DecelerateInterpolator());
+                                    animationCajas.start();
+                                } else {
+                                    porcentajeCajasText.setText("0%");
+                                }
+                            } else {
+                                ViewDialog alert = new ViewDialog(ConsultaAvanceActivity.this);
+                                alert.showDialog(ConsultaAvanceActivity.this, "Error en el servicio que guarda los códigos: " + respuestaGuardaArticulos.getMensaje(), null, TiposAlert.ERROR);
+                            }
+                        } else {
+                            mDialog.dismiss();
+                            System.out.println("*** 2 ***");
+                            //cuando el tiempo del servicio exedio el timeout
+                            ViewDialog alert = new ViewDialog(ConsultaAvanceActivity.this);
+                            alert.showDialog(ConsultaAvanceActivity.this, "Error en el servicio que guarda los códigos", null, TiposAlert.ERROR);
+                        }
+
+                    }
+                });
+
+
+
+
+
+
+
+
+                /*StringRequest strRequest = new StringRequest(Request.Method.POST, url,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
@@ -186,7 +263,7 @@ public class ConsultaAvanceActivity extends AppCompatActivity {
                         return params;
                     }
                 };
-                AppController.getInstance().addToRequestQueue(strRequest, "tag");
+                AppController.getInstance().addToRequestQueue(strRequest, "tag");*/
 
             } catch(Exception me) {
                 ViewDialog alert = new ViewDialog(ConsultaAvanceActivity.this);
@@ -199,7 +276,7 @@ public class ConsultaAvanceActivity extends AppCompatActivity {
         }
     }
 
-    public void generaFaltantes(String response, CodigosGuardadosVO codigos) {
+    /*public void generaFaltantes(String response, CodigosGuardadosVO codigos) {
         try {
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -267,7 +344,7 @@ public class ConsultaAvanceActivity extends AppCompatActivity {
             ViewDialog alert = new ViewDialog(ConsultaAvanceActivity.this);
             alert.showDialog(ConsultaAvanceActivity.this, "Error al formar las diferencias del xml: " + e.getMessage(), null, TiposAlert.ERROR);
         }
-    }
+    }*/
 
     public String obtieneCadenaArticulos() {
         StringBuffer cadena = new StringBuffer();

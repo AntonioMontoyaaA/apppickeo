@@ -2,6 +2,7 @@ package neto.com.mx.surtepedidocedis.beans;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Created by yruizm on 30/10/16.
@@ -21,6 +22,11 @@ public class ArticuloVO implements Serializable {
     private boolean esBuscadoDiferencias = false;
     private int posicion = 0;
     private boolean esArticuloContado = false;
+    private List<ArticuloVO> listaArticulo;
+
+
+    private int codigo;
+    private String mensaje;
 
     public ArticuloVO() {
         codigos = new HashSet<String>();
@@ -54,8 +60,8 @@ public class ArticuloVO implements Serializable {
         return totalCajasPickeadas;
     }
 
-    public void setTotalCajasPickeadas(int totalCajasPickeadas) {
-        this.totalCajasPickeadas = totalCajasPickeadas;
+    public void setTotalCajasPickeadas(int totalCajasSurtidas) {
+        this.totalCajasPickeadas = totalCajasSurtidas;
     }
 
     public String getNombreArticulo() {
@@ -122,6 +128,29 @@ public class ArticuloVO implements Serializable {
         this.esArticuloContado = esArticuloContado;
     }
 
+    public int getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(int codigo) {
+        this.codigo = codigo;
+    }
+
+    public String getMensaje() {
+        return mensaje;
+    }
+
+    public void setMensaje(String mensaje) {
+        this.mensaje = mensaje;
+    }
+    public List<ArticuloVO> getListaArticulo() {
+        return listaArticulo;
+    }
+
+    public void setListaArticulo(List<ArticuloVO> listaArticulo) {
+        this.listaArticulo = listaArticulo;
+    }
+
     @Override
     public String toString() {
         return "ArticuloVO{" +
@@ -137,6 +166,9 @@ public class ArticuloVO implements Serializable {
                 ", esBuscadoDiferencias=" + esBuscadoDiferencias +
                 ", posicion=" + posicion +
                 ", esArticuloContado=" + esArticuloContado +
+                ", listaArticulo=" + listaArticulo +
+                ", codigo=" + codigo +
+                ", mensaje='" + mensaje + '\'' +
                 '}';
     }
 }

@@ -2,11 +2,9 @@ package neto.com.mx.surtepedidocedis;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridLayout;
@@ -14,7 +12,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import neto.com.mx.surtepedidocedis.beans.ZonaPickeoVO;
+import neto.com.mx.surtepedidocedis.beans.ZonaVerificadoVO;
 import neto.com.mx.surtepedidocedis.dialogos.ViewDialog;
 import neto.com.mx.surtepedidocedis.utiles.TiposAlert;
 
@@ -28,7 +26,7 @@ public class CargaZonasDisponiblesActivity extends AppCompatActivity {
     private String[] listaZonaLetra = {"AA-AB", "AC-AD", "AE-AF", "BA-BB", "BC-BD", "CG-CH", "CJ", "DJ", "E", "F", "G",
             "H", "I", "J", "K", "L", "M", "N"};
 
-    private List<ZonaPickeoVO> listaZonas = null;
+    private List<ZonaVerificadoVO> listaZonas = null;
     private String folio = null;
     private String nombreEmpleado = null;
     private String numeroEmpleado = null;
@@ -40,11 +38,12 @@ public class CargaZonasDisponiblesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_carga_zonas_disponibles);
         getSupportActionBar().hide();
 
-        listaZonas = (List<ZonaPickeoVO>)this.getIntent().getSerializableExtra("listaZonas");
+        listaZonas = (List<ZonaVerificadoVO>)this.getIntent().getSerializableExtra("listaZonasVerificado");
         nombreEmpleado = new String(this.getIntent().getStringExtra("nombreEmpleado"));
         numeroEmpleado = new String(this.getIntent().getStringExtra("numeroEmpleado"));
         nombreTienda = new String(this.getIntent().getStringExtra("nombreTienda"));
         folio = new String(this.getIntent().getStringExtra("folio"));
+        System.out.println("FOLIO:///////////////////"+folio);
 
         dibujaZonas();
     }

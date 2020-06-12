@@ -8,17 +8,13 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.InputType;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
@@ -29,11 +25,7 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-
+import org.ksoap2.serialization.SoapObject;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
@@ -48,10 +40,12 @@ import neto.com.mx.surtepedidocedis.beans.CodigoBarraVO;
 import neto.com.mx.surtepedidocedis.beans.CodigosGuardadosVO;
 import neto.com.mx.surtepedidocedis.dialogos.DiferenciaAclaradaDialog;
 import neto.com.mx.surtepedidocedis.dialogos.ViewDialog;
-import neto.com.mx.surtepedidocedis.dialogos.ViewDialogoConfirma;
 import neto.com.mx.surtepedidocedis.dialogos.ViewDialogoErrorActivity;
-import neto.com.mx.surtepedidocedis.utiles.Constantes;
+import neto.com.mx.surtepedidocedis.providers.ProviderGuardarArticulos;
 import neto.com.mx.surtepedidocedis.utiles.TiposAlert;
+
+import static neto.com.mx.surtepedidocedis.utiles.Constantes.METHOD_NAME_GUARDARARTSCONTADOSVERIFICADOR;
+import static neto.com.mx.surtepedidocedis.utiles.Constantes.NAMESPACE;
 
 public class ConteoDiferenciasActivity extends AppCompatActivity {
 
@@ -96,7 +90,7 @@ public class ConteoDiferenciasActivity extends AppCompatActivity {
         nombreZona = new String(this.getIntent().getStringExtra("nombreZona").trim());
         idZona = this.getIntent().getIntExtra("idZona", 0);
         editTextCodigos = (EditText) findViewById(R.id.codigoBarraText);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             editTextCodigos.setCursorVisible(false);
         }else{
             editTextCodigos.setInputType(InputType.TYPE_NULL);
@@ -375,9 +369,11 @@ public class ConteoDiferenciasActivity extends AppCompatActivity {
             // Operaciones http
 
             try {
-                String url = Constantes.URL_STRING + "guardarArticulosContados";
 
-                int contadorOcurrencias = 0;
+
+                //String url = Constantes.URL_STRING + "guardarArticulosContados";
+
+                //int contadorOcurrencias = 0;
 
                 final ProgressDialog mDialog = new ProgressDialog(this);
                 mDialog.setMessage("Guardando códigos de barra...");
@@ -387,7 +383,62 @@ public class ConteoDiferenciasActivity extends AppCompatActivity {
                     mDialog.show();
                 }
 
-                StringRequest strRequest = new StringRequest(Request.Method.POST, url,
+                SoapObject request = new SoapObject(NAMESPACE,METHOD_NAME_GUARDARARTSCONTADOSVERIFICADOR);
+                request.addProperty("folio", folio);
+                request.addProperty("articulosArray", obtieneCadenaArticulos());
+                request.addProperty("cantidadesArray", obtieneCadenaCajas());
+                request.addProperty("tipoGuardado", String.valueOf(ACCION_GUARDA));
+                request.addProperty("zonaId", String.valueOf(idZona));
+                request.addProperty("usuario", numeroEmpleado);
+                request.addProperty("numeroSerie", Build.SERIAL);
+                request.addProperty("version", version);
+
+                ProviderGuardarArticulos.getInstance(this).getGuardarArticulos(request, new ProviderGuardarArticulos.interfaceGuardarArticulos() {
+                    @Override
+                    public void resolver(CodigosGuardadosVO respuestaGuardaArticulos) {
+                        mDialog.dismiss();
+                        System.out.println("*** 1 *** response en ConteoDiferencias: " + respuestaGuardaArticulos);
+                        if (respuestaGuardaArticulos != null) {
+                            if (respuestaGuardaArticulos.getCodigo() == 0) {
+                                if (ACCION_GUARDA == 1) {
+                                    Intent intent = new Intent(ConteoDiferenciasActivity.this, DiferenciasRecibidasActivity.class);
+                                    intent.putExtra("CodigosGuardados", respuestaGuardaArticulos);
+                                    intent.putExtra("folio", folio);
+                                    intent.putExtra("numeroEmpleado", numeroEmpleado);
+                                    intent.putExtra("nombreEmpleado", nombreEmpleado);
+                                    intent.putExtra("nombreTienda", nombreTienda);
+                                    intent.putExtra("nombreZona", nombreZona);
+                                    intent.putExtra("idZona", idZona);
+                                    startActivity(intent);
+                                }
+                            } else {
+                                ViewDialog alert = new ViewDialog(ConteoDiferenciasActivity.this);
+                                alert.showDialog(ConteoDiferenciasActivity.this, "Error al guardar los códigos: " + respuestaGuardaArticulos.getMensaje(), null, TiposAlert.ERROR);
+                            }
+                        } else {
+                            mDialog.dismiss();
+                            System.out.println("*** 2 ***");
+                            //cuando el tiempo del servicio exedio el timeout
+                            ViewDialog alert = new ViewDialog(ConteoDiferenciasActivity.this);
+                            alert.showDialog(ConteoDiferenciasActivity.this, "Error en el WS que guarda los códigos: favor de validar la comunicación del dispositivo", null, TiposAlert.ERROR);
+                        }
+
+                    }
+                });
+            } catch(Exception me) {
+                if(!esGuardadoPorCodigos) {
+                    ViewDialog alert = new ViewDialog(ConteoDiferenciasActivity.this);
+                    alert.showDialog(ConteoDiferenciasActivity.this, "URL no disponible: favor de validar la conexión a Internet" + me.getMessage(), null, TiposAlert.ERROR);
+                }
+            }
+        } else {
+            // Mostrar errores
+            if(!esGuardadoPorCodigos) {
+                ViewDialog alert = new ViewDialog(ConteoDiferenciasActivity.this);
+                alert.showDialog(ConteoDiferenciasActivity.this, "No hay conexión HTTP", null, TiposAlert.ERROR);
+            }
+        }
+                /*StringRequest strRequest = new StringRequest(Request.Method.POST, url,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
@@ -441,20 +492,8 @@ public class ConteoDiferenciasActivity extends AppCompatActivity {
                         return params;
                     }
                 };
-                AppController.getInstance().addToRequestQueue(strRequest, "tag");
-            } catch(Exception me) {
-                if(!esGuardadoPorCodigos) {
-                    ViewDialog alert = new ViewDialog(ConteoDiferenciasActivity.this);
-                    alert.showDialog(ConteoDiferenciasActivity.this, "URL no disponible: favor de validar la conexión a Internet" + me.getMessage(), null, TiposAlert.ERROR);
-                }
-            }
-        } else {
-            // Mostrar errores
-            if(!esGuardadoPorCodigos) {
-                ViewDialog alert = new ViewDialog(ConteoDiferenciasActivity.this);
-                alert.showDialog(ConteoDiferenciasActivity.this, "No hay conexión HTTP", null, TiposAlert.ERROR);
-            }
-        }
+                AppController.getInstance().addToRequestQueue(strRequest, "tag");*/
+
     }
 
     public String obtieneCadenaArticulos() {
