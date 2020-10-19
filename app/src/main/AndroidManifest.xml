@@ -59,6 +59,19 @@
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity"
             android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity
+            android:name=".decarga_version.DescargaUltimaVersionDialog_https"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Dialog" >
+            <intent-filter  android:priority="1">
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.INSTALL_PACKAGE" />
+                <data android:mimeType="application/vnd.android.package-archive" />
+                <!--<category android:name="android.intent.category.DEFAULT" />-->
+                <data android:scheme="file" />
+                <!--<data android:scheme="content" />-->
+            </intent-filter>
+        </activity>
         <activity android:name=".ConsultaAvanceActivity" android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity"></activity>
     </application>

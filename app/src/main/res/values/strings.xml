@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">SurtePedidoCedis</string>
     <string name="edit_message">Enter a message</string>
+    <string name="app_id">4</string><!--pickeo ~~ cambia respecto a la app-->
+
+    <string name="request_sinrespuesta">No se obtubo respuesta.</string>
 </resources>

@@ -14,8 +14,11 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import neto.com.mx.surtepedidocedis.decarga_version.DescargaUltimaVersionDialog_https;
+
 public class SplashScreenActivity extends AppCompatActivity {
 
+    private static final int UPDATEINSTALL_CODE = 0;
     private final int SPLASH_DISPLAY_LENGTH = 2000;
 
     @Override
@@ -44,6 +47,12 @@ public class SplashScreenActivity extends AppCompatActivity {
         } catch(PackageManager.NameNotFoundException ne) {
             Log.e("CARGA_FOLIO_TAG", "Error al obtener la versión: " + ne.getMessage());
         }
+
+
+        //Verificacion de version
+        Intent intentVersion = new Intent(this,
+                DescargaUltimaVersionDialog_https.class);
+        startActivityForResult(intentVersion, UPDATEINSTALL_CODE);
 
     }
 
