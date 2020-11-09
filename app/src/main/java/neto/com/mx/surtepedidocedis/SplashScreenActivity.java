@@ -20,6 +20,11 @@ public class SplashScreenActivity extends AppCompatActivity {
 
     private static final int UPDATEINSTALL_CODE = 0;
     private final int SPLASH_DISPLAY_LENGTH = 2000;
+    private static SplashScreenActivity myContext;
+
+    public static SplashScreenActivity getMyContext() {
+        return myContext;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

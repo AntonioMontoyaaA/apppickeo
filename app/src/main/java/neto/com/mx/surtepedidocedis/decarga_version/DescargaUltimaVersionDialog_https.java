@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 import android.telephony.TelephonyManager;
@@ -37,6 +38,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyManagementException;
@@ -62,6 +65,7 @@ import javax.net.ssl.X509TrustManager;
 
 
 import neto.com.mx.surtepedidocedis.R;
+import neto.com.mx.surtepedidocedis.SplashScreenActivity;
 import neto.com.mx.surtepedidocedis.cliente.ClienteSSLConsultaGenerica;
 import neto.com.mx.surtepedidocedis.cliente.HandlerRespuestasVolley;
 import neto.com.mx.surtepedidocedis.mensajes.ParametroCuerpo;
@@ -70,6 +74,7 @@ import neto.com.mx.surtepedidocedis.mensajes.SolicitudServicio;
 import neto.com.mx.surtepedidocedis.utiles.Constantes;
 import neto.com.mx.surtepedidocedis.utiles.GlobalShare;
 import neto.com.mx.surtepedidocedis.utiles.Identidad;
+import neto.com.mx.surtepedidocedis.utiles.Util;
 
 
 /**
@@ -595,7 +600,9 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
 
         String aplicacionId = getResources().getString(R.string.app_id);
 
-        String imeii = identidadDispositivo; // telephonyManager.getDeviceId();
+        //String imeii = identidadDispositivo; // telephonyManager.getDeviceId(); primer Version
+
+        String imeii = Settings.Secure.getString( getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         String version = null;
         try {
             version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
@@ -668,8 +675,11 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
         cuerpoPeticion.add(new ParametroCuerpo(idxMensaje, "::String", "0"));
 
 
-        System.out.println( "////////////////////////////////////////////////imeii " + imeii+ " aplicacionId "+ aplicacionId + " versionActual " + versionActual + " idxVersion " +idxVersion+ " idxUrlDescarga " + idxUrlDescarga+
+        System.out.println( "////////////////////////////////////////////////imeii " + imeii+ " imeii2 Hexadecimal " +  Util.HexadecilaToDecimal( imeii ) + " aplicacionId "+ aplicacionId + " versionActual " + versionActual + " idxVersion " +idxVersion+ " idxUrlDescarga " + idxUrlDescarga+
                 " idxIdError "+idxIdError+ " idxMensaje " + idxMensaje );
+
+        String macAddress = null;
+
 
         runOnUiThread(new Runnable() {
             public void run() {
