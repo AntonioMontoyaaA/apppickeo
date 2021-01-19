@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -432,6 +433,7 @@ public class DescargaUltimaVersionDialog extends Activity {
         GlobalShare.getInstace().setVersionVerificado(false);
 
         cuerpoPeticion.add(new ParametroCuerpo(1, "String", imeii));//IMEII
+        //cuerpoPeticion.add(new ParametroCuerpo(1, "String", "09874563210"));//IMEII
         cuerpoPeticion.add(new ParametroCuerpo(2, "Long", aplicacionId));//IDAPP
         cuerpoPeticion.add(new ParametroCuerpo(3, "String", versionActual));//VERSIONACTUAL
         cuerpoPeticion.add(new ParametroCuerpo(idxVersion, ":String", ""));//Version por actualizar
@@ -497,17 +499,43 @@ public class DescargaUltimaVersionDialog extends Activity {
                                 setResult(RESULT_OK);//Log.d(GlobalShare.logAplicaion, "No es necesario actualizar la versión");
                                 cambiaVistaYTexto(VistaActualizacion.RESULTADO, "No es necesario actualizar la versión.");
                                 cerrarActivity(TIME_WAIT_CLOSE_ACTIVITY_SHORT);
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
+
+                                SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putBoolean( "bloquear",false );
+                                editor.commit();
                                 return;
                             } else if (idOperacionRealizar == RespuestaCentral.ACTUALIZAR_VERSION_ESTABLE) {//cambiaVistaYTexto(VistaActualizacion.INICIAL, "Se requiere instalar actualización");
                                 Log.w(GlobalShare.logAplicaion, descripOpRealizar);
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
+
+                                SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putBoolean( "bloquear",false );
+                                editor.commit();
                                 cambiaVistaYTexto(VistaActualizacion.INICIAL, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                             } else if (idOperacionRealizar == RespuestaCentral.ACTUALIZAR_NUEVA_VERSION) {//cambiaVistaYTexto(VistaActualizacion.INICIAL, "Se requiere hacer Downgrade...");
                                 Log.w(GlobalShare.logAplicaion, descripOpRealizar);
+
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
+
+                                SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putBoolean( "bloquear",false );
+                                editor.commit();
                                 cambiaVistaYTexto(VistaActualizacion.INICIAL, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                             } else if (idOperacionRealizar == RespuestaCentral.ACCESO_DENEGADO_A_APP ||
                                     idOperacionRealizar == RespuestaCentral.APPLICACION_INACTIVA) {
                                 setResult(RESULT_ACCESO_DENEGADO);
                                 GlobalShare.getInstace().setAccesoVerificado(false);
+
+                                SplashScreenActivity.bandera_bloqueaUsuario = true;
+                                SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putBoolean( "bloquear",true );
+                                editor.commit();
+
                                 //cambiaVistaYTexto(VistaActualizacion.INICIAL, "Acceso denegado para este dispositivo...");
                                 cambiaVistaYTexto(VistaActualizacion.RESULTADO, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                                 cerrarActivity(TIME_WAIT_CLOSE_ACTIVITY_LONG);
@@ -515,12 +543,24 @@ public class DescargaUltimaVersionDialog extends Activity {
                             } else if (idOperacionRealizar >= RespuestaCentral.INICIO_RESPUESTAS_ERROR) {
                                 setResult(RESULT_ERROR);
                                 Log.w(GlobalShare.logAplicaion, descripOpRealizar);
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
+
+                                SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putBoolean( "bloquear",false );
+                                editor.commit();
                                 cambiaVistaYTexto(VistaActualizacion.RESULTADO, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                                 cerrarActivity(TIME_WAIT_CLOSE_ACTIVITY_LONG);
                                 return;
                             } else {//Casos no contemplados pasan como [ OK ]
                                 setResult(RESULT_OK);
                                 Log.w(GlobalShare.logAplicaion, descripOpRealizar);
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
+
+                                SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putBoolean( "bloquear",false );
+                                editor.commit();
                                 cambiaVistaYTexto(VistaActualizacion.INICIAL, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                                 cerrarActivity(TIME_WAIT_CLOSE_ACTIVITY_SHORT);
                                 return;

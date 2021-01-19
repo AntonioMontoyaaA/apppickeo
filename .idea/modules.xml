@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="pickeoresponsivo/app" />
-      <module fileurl="file://$PROJECT_DIR$/pickeoresponsivo.iml" filepath="$PROJECT_DIR$/pickeoresponsivo.iml" group="pickeoresponsivo" />
+      <module fileurl="file://$PROJECT_DIR$/pickeoresponsivo.iml" filepath="$PROJECT_DIR$/pickeoresponsivo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/pickeoresponsivo.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/pickeoresponsivo.app.iml" />
     </modules>
   </component>
 </project>

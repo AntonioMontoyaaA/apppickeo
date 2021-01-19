@@ -2,16 +2,21 @@ package neto.com.mx.surtepedidocedis;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import neto.com.mx.surtepedidocedis.decarga_version.DescargaUltimaVersionDialog_https;
@@ -21,6 +26,7 @@ public class SplashScreenActivity extends AppCompatActivity {
     private static final int UPDATEINSTALL_CODE = 0;
     private final int SPLASH_DISPLAY_LENGTH = 2000;
     private static SplashScreenActivity myContext;
+    public static boolean bandera_bloqueaUsuario = false;
 
     public static SplashScreenActivity getMyContext() {
         return myContext;
@@ -62,15 +68,38 @@ public class SplashScreenActivity extends AppCompatActivity {
     }
 
     public void iniciaApp(View view) {
-        Vibrator vibe = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        vibe.vibrate(100);
-        // Do something in response to button
-        Intent mainIntent = new Intent(SplashScreenActivity.this, LoginActivity.class);
-        SplashScreenActivity.this.startActivity(mainIntent);
-        SplashScreenActivity.this.finish();
+
+        SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
+        System.out.println("valores de sharedPreferences: "+ preferences.getAll());
+        boolean bloqueaUsuario = preferences.getBoolean( "bloquear",true );
+
+        if (bandera_bloqueaUsuario == true || bloqueaUsuario == true){
+            MostrarSnack( view,"para poder iniciar sesion, se necesita que La aplicación se encuentre asignada al dispositivo" );
+
+        }else {
+            Vibrator vibe = (Vibrator) getSystemService( Context.VIBRATOR_SERVICE );
+            vibe.vibrate( 100 );
+            // Do something in response to button
+            Intent mainIntent = new Intent( SplashScreenActivity.this, LoginActivity.class );
+            SplashScreenActivity.this.startActivity( mainIntent );
+            SplashScreenActivity.this.finish();
+        }
     }
 
     @Override
     public void onBackPressed() {
+    }
+
+    public void MostrarSnack(View view, String texto){
+        Snackbar snackbar = Snackbar.make(view, texto, Snackbar.LENGTH_LONG);
+        View view2 = snackbar .getView();
+        TextView textView = (TextView) view2.findViewById(android.support.design.R.id.snackbar_text);
+        textView.setTextColor( Color.WHITE);
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)view2.getLayoutParams();
+        params.gravity = Gravity.CENTER;
+        params.leftMargin = 5;
+        params.rightMargin = 5;
+        view2.setLayoutParams(params);
+        snackbar.show();
     }
 }
