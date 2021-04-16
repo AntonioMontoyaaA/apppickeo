@@ -40,7 +40,7 @@ public class ViewDialogoConfirma extends Dialog {
         final Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(false);
-        dialog.setContentView(R.layout.activity_confirma_dialogo_generico);
+        dialog.setContentView( R.layout.activity_confirma_dialogo_generico);
 
         TextView textView = (TextView) dialog.findViewById(R.id.text_dialog_escaneadas);
         textView.setText((cajasContadas - 1) + " de " + cajasEmbarcadas);

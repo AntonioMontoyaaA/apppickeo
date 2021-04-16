@@ -3,18 +3,11 @@ package neto.com.mx.surtepedidocedis.dialogos;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
-import android.media.MediaPlayer;
-import android.os.CountDownTimer;
 import android.os.Handler;
-import android.view.View;
 import android.view.Window;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import neto.com.mx.surtepedidocedis.R;
-import neto.com.mx.surtepedidocedis.utiles.TiposAlert;
 
 /**
  * Created by yruizm on 28/09/17.
@@ -34,7 +27,7 @@ public class BienvenidaDialog extends Dialog {
         dialog.setCancelable(false);
         dialog.setContentView(R.layout.activity_dialogo_bienvenida);
 
-        TextView text = (TextView) dialog.findViewById(R.id.nombreEmpleadoText);
+        TextView text = (TextView) dialog.findViewById( R.id.nombreEmpleadoText);
         text.setText(usuario);
 
         dialog.show();

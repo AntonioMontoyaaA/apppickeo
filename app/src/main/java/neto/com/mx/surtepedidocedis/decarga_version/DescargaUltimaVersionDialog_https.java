@@ -1,13 +1,9 @@
 package neto.com.mx.surtepedidocedis.decarga_version;
 
-import android.Manifest;
 import android.app.Activity;
 //import android.app.DownloadManager;
-import android.app.DownloadManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -19,9 +15,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -39,13 +33,9 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.annotation.Target;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyManagementException;
@@ -55,9 +45,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -616,7 +604,7 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
         String mensajeError = null;
         //TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 
-        String aplicacionId = getResources().getString(R.string.app_id);
+        String aplicacionId = getResources().getString( R.string.app_id);
 
         //String imeii = identidadDispositivo; // telephonyManager.getDeviceId(); primer Version
 
@@ -685,7 +673,7 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
         GlobalShare.getInstace().setVersionVerificado(false);
 
         cuerpoPeticion.add(new ParametroCuerpo(1, "String", imeii));//IMEII
-        //cuerpoPeticion.add(new ParametroCuerpo(1, "String", "7602296bffcaff1a"));//IMEII
+        //cuerpoPeticion.add(new ParametroCuerpo(1, "String", "b3aee672eff8e541"));//IMEII
         cuerpoPeticion.add(new ParametroCuerpo(2, "Long", aplicacionId));//IDAPP
         cuerpoPeticion.add(new ParametroCuerpo(3, "String", versionActual));//VERSIONACTUAL
         cuerpoPeticion.add(new ParametroCuerpo(idxVersion, ":String", ""));//Version por actualizar

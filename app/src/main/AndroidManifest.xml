@@ -9,8 +9,10 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
     <uses-permission android:name="android.permission.INSTALL_PACKAGES"
         tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <application
 
@@ -64,6 +66,19 @@
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity"
             android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity
+            android:name=".decarga_version.DescargaUltimaVersionDialogPrueba"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Dialog" >
+            <intent-filter  android:priority="1">
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.INSTALL_PACKAGE" />
+                <data android:mimeType="application/vnd.android.package-archive" />
+                <!--<category android:name="android.intent.category.DEFAULT" />-->
+                <data android:scheme="file" />
+                <!--<data android:scheme="content" />-->
+            </intent-filter>
+        </activity>
         <activity
             android:name=".decarga_version.DescargaUltimaVersionDialog_https"
             android:screenOrientation="portrait"

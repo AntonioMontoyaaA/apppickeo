@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.provider.Settings;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -19,7 +20,9 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import neto.com.mx.surtepedidocedis.decarga_version.DescargaUltimaVersionDialogPrueba;
 import neto.com.mx.surtepedidocedis.decarga_version.DescargaUltimaVersionDialog_https;
+import neto.com.mx.surtepedidocedis.utiles.Constantes;
 
 public class SplashScreenActivity extends AppCompatActivity {
 
@@ -54,15 +57,25 @@ public class SplashScreenActivity extends AppCompatActivity {
         //Versión
         try {
             TextView versionText = (TextView) findViewById(R.id.versionAppText);
-            versionText.setText("© Todos los derechos reservados      v" + getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
+            versionText.setText("© Todos los derechos reservados      v" + getPackageManager().getPackageInfo(getPackageName(), 0).versionName+"\nAndroid Id: "+ Settings.Secure.getString( getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID));
         } catch(PackageManager.NameNotFoundException ne) {
             Log.e("CARGA_FOLIO_TAG", "Error al obtener la versión: " + ne.getMessage());
         }
 
 
         //Verificacion de version
-        Intent intentVersion = new Intent(this,
-                DescargaUltimaVersionDialog_https.class);
+        Intent intentVersion ;
+        if (Constantes.CADENA_CONEXION.contains( "http://10.81.12.203:8003" )){
+            intentVersion= new Intent(this,
+                    DescargaUltimaVersionDialogPrueba.class);//PROD
+            System.out.println("cadenaConexion: PROD");
+
+        }else {
+            intentVersion = new Intent( this,
+                    DescargaUltimaVersionDialog_https.class );//DESA_QA
+
+            System.out.println("cadenaConexion: DESA_QA");
+        }
         startActivityForResult(intentVersion, UPDATEINSTALL_CODE);
 
     }

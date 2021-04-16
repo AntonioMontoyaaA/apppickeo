@@ -3,5 +3,7 @@
     <string name="edit_message">Enter a message</string>
     <string name="app_id">4</string><!--pickeo ~~ cambia respecto a la app-->
 
+    <string name="error_gen_cliente">0x7f0e002d</string>
+
     <string name="request_sinrespuesta">No se obtubo respuesta.</string>
 </resources>

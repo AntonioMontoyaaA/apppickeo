@@ -34,7 +34,6 @@ public class Constantes {
     //public static final String CADENA_CONEXION   = "http://10.81.12.46:7777/WSGenericoMovil/ssl/servicio/consultaGenericaDinamica";
 
     //Produccion
-    public static final String CADENA_CONEXION = "https://www.servicios.tiendasneto.com/WSGenericosMovil/ssl/servicio/consultaGenericaDinamica";
-    //public static final String CADENA_CONEXION = "http://10.81.12.203:8003/WSMovilREST/servicio/genericos/consultaGenericaDinamica";
-    //public static final String CADENA_CONEXION = "http://10.81.12.46:7777/WSGenericoMovil/ssl/servicio/consultaGenericaDinamica";
+    //public static final String CADENA_CONEXION = "https://www.servicios.tiendasneto.com/WSGenericosMovil/ssl/servicio/consultaGenericaDinamica";
+    public static final String CADENA_CONEXION = "http://10.81.12.203:8003/WSMovilREST/servicio/genericos/consultaGenericaDinamica";
 }

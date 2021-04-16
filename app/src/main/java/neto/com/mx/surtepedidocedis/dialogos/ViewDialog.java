@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.CountDownTimer;
 import android.view.View;
@@ -15,8 +14,6 @@ import android.widget.TextView;
 
 import neto.com.mx.surtepedidocedis.R;
 import neto.com.mx.surtepedidocedis.utiles.TiposAlert;
-
-import android.media.AudioManager;
 
 /**
  * Created by yruizm on 31/10/16.
@@ -33,7 +30,7 @@ public class ViewDialog extends Dialog {
         final Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(false);
-        dialog.setContentView(R.layout.activity_dialogo_generico);
+        dialog.setContentView( R.layout.activity_dialogo_generico);
 
         TextView text = (TextView) dialog.findViewById(R.id.text_dialog);
         text.setText(msg);

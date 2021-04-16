@@ -28,7 +28,7 @@ public class DiferenciaAclaradaDialog extends Dialog {
         final Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(false);
-        dialog.setContentView(R.layout.activity_diferencia_aclarada);
+        dialog.setContentView( R.layout.activity_diferencia_aclarada);
 
         final MediaPlayer mp = MediaPlayer.create(contexto, R.raw.escaneo_error_2);
         mp.start();

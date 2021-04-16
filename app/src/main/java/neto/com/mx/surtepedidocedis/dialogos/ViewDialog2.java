@@ -50,7 +50,7 @@ public class ViewDialog2 extends Dialog {
         final Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature( Window.FEATURE_NO_TITLE);
         //dialog.setCancelable(false);
-        dialog.setContentView(R.layout.activity_dialogo_generico);
+        dialog.setContentView( R.layout.activity_dialogo_generico);
         dialog.setOnCancelListener(dismissLintener);
 
         TextView text = (TextView) dialog.findViewById(R.id.text_dialog);
