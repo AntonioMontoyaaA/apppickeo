@@ -19,6 +19,21 @@ android {
             debuggable true
         }
     }
+    //    signingConfigs{
+//        //Unificacion de Keystore para futuros releases
+//        release{
+//            storeFile file("")
+//            storePassword ''
+//            keyAlias ''
+//            keyPassword ''
+//        }
+//        debug{
+//            storeFile file("")
+//            storePassword ''
+//            keyAlias ''
+//            keyPassword ''
+//        }
+//    }
 }
 
 dependencies {

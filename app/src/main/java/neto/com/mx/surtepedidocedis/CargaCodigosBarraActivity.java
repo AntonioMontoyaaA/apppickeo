@@ -903,9 +903,13 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
 
     public void cuentaCajasPickeadas() {
         totalCajasPickeadas = 0;
+        totalCajasAsignadas = 0;
         for (ArticuloVO entry : mapaCatalogo.values()) {
             totalCajasPickeadas += entry.getTotalCajasPickeadas();
+            totalCajasAsignadas += entry.getTotalCajasAsignadas();
         }
+        System.out.println("CONTEO DE CAJAS PICKEADAS "+totalCajasPickeadas);
+        System.out.println("CONTEO DE CAJAS ASIGNADAS "+totalCajasAsignadas);
     }
 
     public void ejecutaWSHilo() {
